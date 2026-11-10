@@ -1,0 +1,1181 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SILKYGEO GEOAI | Industrial Hemp World Map 2024</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link rel="preconnect" href="https://fenixservices.fao.org">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+<style>
+:root{
+  --navy:#071b33;
+  --blue:#123e69;
+  --green:#16845b;
+  --light:#f2f6fa;
+  --panel:#ffffff;
+  --text:#172b42;
+  --muted:#6c7b8b;
+  --border:#dce5ed;
+  --red:#d52b35;
+  --gold:#e7ad37;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  font-family:Inter,Arial,sans-serif;
+  color:var(--text);
+  background:var(--light);
+}
+header{
+  min-height:76px;
+  padding:13px 22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  color:white;
+  background:linear-gradient(110deg,#071b33,#123e69 60%,#08734f);
+  border-bottom:4px solid #d52b35;
+}
+.brand{display:flex;align-items:center;gap:13px}
+.brand-mark{
+  width:43px;height:43px;border-radius:10px;
+  display:grid;place-items:center;
+  background:#fff;color:#08734f;
+  font-size:23px;font-weight:900;
+}
+.brand h1{font-size:18px;margin:0 0 4px;letter-spacing:.5px}
+.brand p{font-size:11px;margin:0;color:#d9e8f5}
+.header-right{text-align:right;font-size:11px;line-height:1.6;color:#e5eff7}
+.header-right strong{font-size:13px;color:white}
+.toolbar{
+  min-height:43px;
+  padding:7px 16px;
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:#fff;border-bottom:1px solid var(--border);
+  font-size:11px;
+}
+.status{display:flex;align-items:center;gap:7px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:#d69b25}
+.dot.ok{background:#169b65}
+.dot.error{background:#d52b35}
+.actions{display:flex;gap:7px;flex-wrap:wrap}
+button,.button{
+  border:0;border-radius:6px;padding:8px 11px;
+  background:var(--blue);color:white;font-weight:700;
+  font-size:11px;cursor:pointer;
+}
+button:hover{filter:brightness(1.12)}
+button.secondary{background:#eaf0f5;color:#23415d;border:1px solid var(--border)}
+button.green{background:var(--green)}
+button.red{background:#bd3039}
+button:disabled{opacity:.55;cursor:not-allowed}
+main{
+  display:grid;
+  grid-template-columns: minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);
+  gap:10px;padding:10px;
+  flex:1;min-height:0;
+}
+.panel{
+  min-width:0;min-height:0;overflow-y:auto;
+  background:var(--panel);border:1px solid var(--border);
+  border-radius:9px;padding:13px;
+  scrollbar-width:thin;
+}
+.panel h2{
+  font-size:13px;margin:0 0 12px;padding-bottom:9px;
+  border-bottom:2px solid var(--border);
+  color:var(--navy);letter-spacing:.3px;
+}
+.section{margin-bottom:16px}
+.section-title{
+  font-size:10px;font-weight:800;text-transform:uppercase;
+  letter-spacing:.7px;color:#63778a;margin-bottom:8px;
+}
+label{display:block;font-size:11px;font-weight:700;margin:9px 0 5px}
+select,input[type="text"],input[type="number"]{
+  width:100%;padding:9px;border:1px solid #cbd7e1;border-radius:6px;
+  background:white;color:var(--text);font-size:11px;outline:none;
+}
+select:focus,input:focus{border-color:#2b83b7}
+small,.muted{font-size:10px;color:var(--muted);line-height:1.5}
+.control-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.button-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}
+.kpi{
+  background:#f4f8fb;border:1px solid var(--border);
+  border-left:3px solid var(--green);border-radius:7px;padding:10px;
+  min-width:0;
+}
+.kpi .value{font-size:19px;font-weight:800;color:var(--navy);overflow-wrap:anywhere}
+.kpi .label{font-size:9px;color:var(--muted);margin-top:4px;line-height:1.4}
+.map-panel{
+  display:flex;flex-direction:column;overflow:hidden;padding:0;
+}
+.map-head{
+  padding:12px 14px 9px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+}
+.map-head h2{border:0;padding:0;margin:0}
+.map-head span{font-size:10px;color:var(--muted)}
+#map{flex:1;min-height:250px;width:100%;background:#dce8ee}
+.map-legend{
+  padding:10px 13px;border-top:1px solid var(--border);
+  background:#fff;font-size:10px;
+}
+.legend-scale{display:flex;height:10px;margin:7px 0 4px;border-radius:4px;overflow:hidden}
+.legend-scale span{flex:1}
+.legend-labels{display:flex;justify-content:space-between;color:var(--muted)}
+.chart-wrap{height:205px;position:relative;margin:8px 0 15px}
+#rankingChart{width:100%;height:100%}
+table{width:100%;border-collapse:collapse;font-size:10px}
+th,td{padding:8px 6px;border-bottom:1px solid #e6edf2;text-align:left}
+th{background:#f2f6f9;color:#40556a;position:sticky;top:0;z-index:1}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+.table-wrap{max-height:270px;overflow:auto;border:1px solid var(--border);border-radius:6px}
+.notice{
+  padding:9px 10px;border-radius:6px;background:#fff8e8;
+  border:1px solid #f0dfb4;color:#74561c;font-size:10px;line-height:1.5;
+}
+.info{
+  padding:9px 10px;border-radius:6px;background:#eef6fc;
+  border:1px solid #d5e7f5;color:#34536e;font-size:10px;line-height:1.5;
+}
+.country-card{
+  padding:10px;border:1px solid var(--border);border-radius:7px;
+  background:#f8fafc;font-size:11px;line-height:1.7;
+}
+.country-card strong{color:var(--navy)}
+footer{
+  min-height:27px;padding:6px 14px;text-align:center;
+  background:#071b33;color:#dbe6ef;font-size:9px;letter-spacing:.2px;
+}
+#message{font-size:10px;color:var(--muted);line-height:1.5;margin-top:8px;white-space:pre-wrap}
+#loading{
+  position:absolute;inset:0;display:none;place-items:center;
+  background:#ffffffd9;z-index:500;font-size:13px;font-weight:800;color:var(--navy)
+}
+.map-holder{position:relative;flex:1;min-height:0;display:flex}
+.leaflet-popup-content{font-size:11px;line-height:1.6}
+.leaflet-container{font-family:Arial,sans-serif}
+@media(max-width:900px){
+  body{height:auto;min-height:100%;overflow:auto}
+  main{grid-template-columns:1fr;overflow:visible}
+  .panel{min-height:360px;overflow:visible}
+  .map-panel{height:520px;min-height:520px}
+  #map{min-height:0}
+  footer{margin-top:10px}
+  header{align-items:flex-start}
+  .header-right{display:none}
+}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="brand">
+    <div class="brand-mark">G</div>
+    <div>
+      <h1>SILKYGEO GEOAI</h1>
+      <p>Industrial Hemp World Map • FAOSTAT 2024</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <strong>GLOBAL AGRICULTURAL INTELLIGENCE</strong><br>
+    World distribution • Production indicators • Country comparison
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="status">
+    <span id="statusDot" class="dot"></span>
+    <span id="statusText">Waiting for FAOSTAT data connection</span>
+  </div>
+  <div class="actions">
+    <button class="green" id="loadBtn">Load FAOSTAT 2024</button>
+    <button class="secondary" id="resetBtn">Reset</button>
+  </div>
+</div>
+
+<main>
+  <!-- LEFT: CONTROLS -->
+  <aside class="panel">
+    <h2>01 | CONTROLS</h2>
+
+    <div class="section">
+      <div class="section-title">Data source</div>
+      <label>FAOSTAT domain</label>
+      <select id="domain">
+        <option value="QCL">QCL – Crops and livestock products</option>
+      </select>
+      <label>Reference year</label>
+      <select id="year">
+        <option value="2024" selected>2024</option>
+      </select>
+      <label>Commodity keyword</label>
+      <input id="keyword" type="text" value="hemp" placeholder="e.g. hemp">
+      <p class="muted">The dashboard searches commodity names returned by FAOSTAT. It does not assume that every hemp-related product is the same commodity.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Map and indicator filters</div>
+      <label>Statistical indicator</label>
+      <select id="element">
+        <option value="ALL">All available indicators</option>
+      </select>
+      <label>Commodity</label>
+      <select id="item">
+        <option value="ALL">All hemp-related commodities</option>
+      </select>
+      <label>Map classification</label>
+      <select id="classification">
+        <option value="quantile">Quantile – five classes</option>
+        <option value="equal">Equal interval – five classes</option>
+        <option value="natural">Natural breaks approximation</option>
+      </select>
+      <label>Country search</label>
+      <input type="text" id="countrySearch" placeholder="Search country name">
+      <div class="button-row">
+        <button class="secondary" id="applyBtn">Apply filters</button>
+        <button class="secondary" id="clearSearchBtn">Clear search</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Data import</div>
+      <label>Upload FAOSTAT CSV file (optional)</label>
+      <input type="file" id="csvFile" accept=".csv,text/csv">
+      <p class="muted">Use this if the live API is unavailable or your browser blocks the connection. CSV headers should include Area, Area Code (M49), Item, Element, Year, Unit and Value.</p>
+      <div class="button-row">
+        <button class="secondary" id="exportCsv">Export filtered CSV</button>
+        <button class="secondary" id="exportGeo">Export map GeoJSON</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Map information</div>
+      <div class="info">
+        Country polygons are from Natural Earth via World Atlas. Statistical observations are from FAOSTAT. The map joins country features using numeric M49 identifiers where available.
+      </div>
+    </div>
+
+    <div id="message">Ready. Select “Load FAOSTAT 2024” to retrieve observations.</div>
+  </aside>
+
+  <!-- CENTRE: MAP -->
+  <section class="panel map-panel">
+    <div class="map-head">
+      <h2>02 | INTERACTIVE WORLD MAP</h2>
+      <span id="mapSubtitle">Waiting for data</span>
+    </div>
+    <div class="map-holder">
+      <div id="map"></div>
+      <div id="loading">Loading global dataset…</div>
+    </div>
+    <div class="map-legend">
+      <strong id="legendTitle">Map legend</strong>
+      <div class="legend-scale" id="legendScale">
+        <span style="background:#edf3f7"></span>
+        <span style="background:#c6e4d6"></span>
+        <span style="background:#79c5a3"></span>
+        <span style="background:#32966d"></span>
+        <span style="background:#075b3d"></span>
+      </div>
+      <div class="legend-labels" id="legendLabels">
+        <span>No data</span><span>Low</span><span>High</span>
+      </div>
+      <p class="muted">Click a mapped country to inspect its selected statistical observation.</p>
+    </div>
+  </section>
+
+  <!-- RIGHT: ANALYTICS -->
+  <aside class="panel">
+    <h2>03 | ANALYTICS</h2>
+
+    <div class="section">
+      <div class="section-title">Global indicators</div>
+      <div class="kpis">
+        <div class="kpi">
+          <div class="value" id="kpiCountries">—</div>
+          <div class="label">Countries with observations</div>
+        </div>
+        <div class="kpi">
+          <div class="value" id="kpiRecords">—</div>
+          <div class="label">Filtered data records</div>
+        </div>
+        <div class="kpi">
+          <div class="value" id="kpiTotal">—</div>
+          <div class="label">Sum of displayed values*</div>
+        </div>
+        <div class="kpi">
+          <div class="value" id="kpiUnit">—</div>
+          <div class="label">Measurement unit(s)</div>
+        </div>
+      </div>
+      <p class="muted">*The sum is calculated only when the filtered records share one measurement unit. It is not shown as a global total for mixed units.</p>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Selected country</div>
+      <div class="country-card" id="countryDetails">
+        Select a country on the map or click a country in the ranking table.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Country ranking</div>
+      <div class="chart-wrap">
+        <canvas id="rankingChart"></canvas>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Country</th>
+              <th class="num">Value</th>
+              <th>Unit</th>
+            </tr>
+          </thead>
+          <tbody id="rankingBody">
+            <tr><td colspan="3">No data loaded</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Methodology and limitations</div>
+      <div class="notice">
+        This dashboard displays observations retrieved from FAOSTAT. A missing country observation is not interpreted as zero production. Hemp-related commodity records and statistical indicators may have different definitions and units. Do not sum different indicators or units. The selected year is 2024; the latest available observation may differ by country.
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-title">Data provenance</div>
+      <p class="muted">
+        Source: Food and Agriculture Organization of the United Nations (FAO), FAOSTAT.
+        Domain: QCL – Crops and livestock products.
+        Reference year: 2024.
+        Boundaries: Natural Earth / World Atlas.
+      </p>
+      <p class="muted">
+        FAOSTAT API:
+        <a href="https://www.fao.org/faostat/en/#developer-portal" target="_blank" rel="noopener">Developer Portal</a>
+      </p>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Produced by Ansu Singhateh | GIS Analyst | GIS / Cartography Unit | Gambia Bureau of Statistics
+  &nbsp; • &nbsp; GBoS GEOAI • Research and educational use
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+<script>
+"use strict";
+
+/* =========================================================
+   CONFIGURATION
+========================================================= */
+const FAOSTAT_BASE = "https://fenixservices.fao.org/faostat/api/v1";
+const WORLD_TOPOJSON = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json";
+const DOMAIN_DEFAULT = "QCL";
+const YEAR_DEFAULT = "2024";
+
+const PALETTE = [
+  "#edf3f7",
+  "#c6e4d6",
+  "#79c5a3",
+  "#32966d",
+  "#075b3d"
+];
+
+let rawRecords = [];
+let filteredRecords = [];
+let worldFeatures = [];
+let mapLayer = null;
+let map = null;
+let chart = null;
+let selectedCountry = null;
+let selectedUnit = "";
+let lastClasses = [];
+let dataSourceLabel = "Not loaded";
+
+/* =========================================================
+   DOM HELPERS
+========================================================= */
+const $ = id => document.getElementById(id);
+
+function setMessage(message){
+  $("message").textContent = message;
+}
+
+function setStatus(message, type="loading"){
+  $("statusText").textContent = message;
+  $("statusDot").className = "dot" + (type === "ok" ? " ok" : type === "error" ? " error" : "");
+}
+
+function showLoading(show){
+  $("loading").style.display = show ? "grid" : "none";
+}
+
+function numberFormat(value, digits=2){
+  if(value === null || value === undefined || !Number.isFinite(Number(value))) return "—";
+  return Number(value).toLocaleString(undefined,{
+    maximumFractionDigits:digits
+  });
+}
+
+function safeText(value){
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+  }[char]));
+}
+
+function normaliseName(value){
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/[^a-z0-9]/g,"");
+}
+
+function getField(record, candidates){
+  for(const key of candidates){
+    if(record[key] !== undefined && record[key] !== null && record[key] !== "") return record[key];
+  }
+  const keys = Object.keys(record || {});
+  for(const candidate of candidates){
+    const found = keys.find(k => k.toLowerCase() === candidate.toLowerCase());
+    if(found && record[found] !== undefined && record[found] !== null) return record[found];
+  }
+  return null;
+}
+
+/* =========================================================
+   MAP INITIALISATION
+========================================================= */
+map = L.map("map",{
+  zoomControl:true,
+  worldCopyJump:true,
+  minZoom:1,
+  maxZoom:8
+}).setView([18,0],2);
+
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",{
+  attribution:'&copy; OpenStreetMap &copy; CARTO',
+  subdomains:"abcd",
+  maxZoom:19
+}).addTo(map);
+
+const boundaryLayer = L.layerGroup().addTo(map);
+
+async function loadWorld(){
+  try{
+    const response = await fetch(WORLD_TOPOJSON);
+    if(!response.ok) throw new Error("World boundary request failed: HTTP " + response.status);
+    const topology = await response.json();
+    const objectName = Object.keys(topology.objects)[0];
+    worldFeatures = topojson.feature(topology,topology.objects[objectName]).features;
+    drawMap();
+  }catch(error){
+    setMessage("World boundaries could not be loaded. Check your internet connection. " + error.message);
+    setStatus("World boundary loading failed","error");
+  }
+}
+
+function featureM49(feature){
+  const id = feature.id;
+  if(id !== undefined && id !== null){
+    const padded = String(id).padStart(3,"0");
+    if(/^\d{1,3}$/.test(String(id))) return padded;
+  }
+  const props = feature.properties || {};
+  const possible = [
+    props.M49,props.m49,props.ISO_N3,props.iso_n3,
+    props.ADM0_A3,props.SOV_A3
+  ];
+  for(const value of possible){
+    if(value !== undefined && value !== null && /^\d{1,3}$/.test(String(value))){
+      return String(value).padStart(3,"0");
+    }
+  }
+  return null;
+}
+
+function countryName(feature){
+  const p = feature.properties || {};
+  return p.name || p.NAME || p.ADMIN || p.name_long || "Unknown country";
+}
+
+/* =========================================================
+   FAOSTAT API
+========================================================= */
+async function loadFaostat(){
+  const year = $("year").value || YEAR_DEFAULT;
+  const domain = $("domain").value || DOMAIN_DEFAULT;
+
+  const url = new URL(`${FAOSTAT_BASE}/en/data/${encodeURIComponent(domain)}`);
+  url.searchParams.set("year",year);
+  url.searchParams.set("area_cs","M49");
+  url.searchParams.set("output_type","objects");
+  url.searchParams.set("show_codes","true");
+  url.searchParams.set("show_unit","true");
+  url.searchParams.set("show_flags","true");
+  url.searchParams.set("null_values","false");
+
+  setStatus("Connecting to FAOSTAT API");
+  setMessage("Requesting " + domain + " observations for " + year + "…");
+  showLoading(true);
+  $("loadBtn").disabled = true;
+
+  try{
+    const response = await fetch(url.toString(),{
+      method:"GET",
+      headers:{"Accept":"application/json"}
+    });
+
+    if(!response.ok){
+      const detail = await response.text().catch(()=> "");
+      throw new Error(`FAOSTAT API returned HTTP ${response.status}. ${detail.slice(0,250)}`);
+    }
+
+    const json = await response.json();
+    const records = Array.isArray(json) ? json : json.data;
+
+    if(!Array.isArray(records)){
+      throw new Error("Unexpected FAOSTAT response format. Expected a data array.");
+    }
+
+    rawRecords = records.map(normaliseRecord).filter(Boolean);
+    dataSourceLabel = "Live FAOSTAT API";
+    populateFilters();
+    applyFilters();
+
+    setStatus("FAOSTAT data loaded","ok");
+    setMessage(
+      `Successfully received ${numberFormat(rawRecords.length,0)} observations from FAOSTAT.\n` +
+      `Domain: ${domain}\nYear: ${year}\nSource: Live FAOSTAT API`
+    );
+  }catch(error){
+    setStatus("FAOSTAT connection failed","error");
+    setMessage(
+      "The live FAOSTAT request could not be completed.\n\n" +
+      error.message +
+      "\n\nYou can retry the API request or upload a FAOSTAT CSV file using the Data Import control. No substitute observations have been generated."
+    );
+    console.error(error);
+  }finally{
+    showLoading(false);
+    $("loadBtn").disabled = false;
+  }
+}
+
+function normaliseRecord(r){
+  if(!r || typeof r !== "object") return null;
+
+  const area = getField(r,["Area","Area Name","Area_name"]);
+  const areaCode = getField(r,["Area Code (M49)","Area Code M49","M49","Area Code"]);
+  const item = getField(r,["Item","Item Name"]);
+  const element = getField(r,["Element","Element Name"]);
+  const year = getField(r,["Year","Year Code"]);
+  const value = getField(r,["Value"]);
+  const unit = getField(r,["Unit"]);
+  const flag = getField(r,["Flag"]);
+  const flagDescription = getField(r,["Flag Description"]);
+  const itemCode = getField(r,["Item Code"]);
+  const elementCode = getField(r,["Element Code"]);
+
+  if(area === null || item === null || element === null) return null;
+
+  const numericValue = value === null || value === "" ? null : Number(value);
+
+  return {
+    area:String(area),
+    areaCode:areaCode === null ? "" : String(areaCode).padStart(3,"0"),
+    item:String(item),
+    itemCode:itemCode === null ? "" : String(itemCode),
+    element:String(element),
+    elementCode:elementCode === null ? "" : String(elementCode),
+    year:String(year ?? ""),
+    value:Number.isFinite(numericValue) ? numericValue : null,
+    unit:String(unit ?? ""),
+    flag:String(flag ?? ""),
+    flagDescription:String(flagDescription ?? "")
+  };
+}
+
+/* =========================================================
+   CSV UPLOAD FALLBACK
+========================================================= */
+$("csvFile").addEventListener("change",event=>{
+  const file = event.target.files && event.target.files[0];
+  if(!file) return;
+
+  setMessage("Reading uploaded CSV file…");
+  showLoading(true);
+
+  Papa.parse(file,{
+    header:true,
+    skipEmptyLines:true,
+    dynamicTyping:false,
+    complete:results=>{
+      rawRecords = results.data.map(normaliseRecord).filter(Boolean);
+      dataSourceLabel = "User-uploaded FAOSTAT CSV";
+      populateFilters();
+      applyFilters();
+      showLoading(false);
+      setStatus("CSV file loaded","ok");
+      setMessage(
+        `Imported ${numberFormat(rawRecords.length,0)} valid observations from ${file.name}.\n` +
+        "Please check that the CSV is a FAOSTAT export for the intended year and domain."
+      );
+    },
+    error:error=>{
+      showLoading(false);
+      setStatus("CSV import failed","error");
+      setMessage("CSV import failed: " + error.message);
+    }
+  });
+});
+
+/* =========================================================
+   FILTER POPULATION
+========================================================= */
+function populateFilters(){
+  const keyword = $("keyword").value.trim().toLowerCase();
+
+  const hempRecords = rawRecords.filter(r =>
+    r.item.toLowerCase().includes(keyword)
+  );
+
+  const elements = [...new Set(hempRecords.map(r=>r.element))].sort();
+  const items = [...new Set(hempRecords.map(r=>r.item))].sort();
+
+  fillSelect($("element"),elements,"All available indicators");
+  fillSelect($("item"),items,"All hemp-related commodities");
+}
+
+function fillSelect(select,values,allLabel){
+  const previous = select.value;
+  select.innerHTML = "";
+
+  const all = document.createElement("option");
+  all.value = "ALL";
+  all.textContent = allLabel;
+  select.appendChild(all);
+
+  values.forEach(value=>{
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = value;
+    select.appendChild(option);
+  });
+
+  if([...select.options].some(option=>option.value===previous)){
+    select.value = previous;
+  }
+}
+
+/* =========================================================
+   FILTER AND AGGREGATION
+========================================================= */
+function applyFilters(){
+  const keyword = $("keyword").value.trim().toLowerCase();
+  const itemFilter = $("item").value;
+  const elementFilter = $("element").value;
+  const countryFilter = $("countrySearch").value.trim().toLowerCase();
+
+  let rows = rawRecords.filter(r=>
+    r.item.toLowerCase().includes(keyword)
+  );
+
+  if(itemFilter !== "ALL") rows = rows.filter(r=>r.item===itemFilter);
+  if(elementFilter !== "ALL") rows = rows.filter(r=>r.element===elementFilter);
+  if(countryFilter) rows = rows.filter(r=>r.area.toLowerCase().includes(countryFilter));
+
+  filteredRecords = rows.filter(r=>r.value !== null && Number.isFinite(r.value));
+
+  selectedUnit = commonUnit(filteredRecords);
+  updateAnalytics();
+  drawMap();
+  updateRanking();
+  updateCountryDetails(null);
+}
+
+function commonUnit(rows){
+  const units = [...new Set(rows.map(r=>r.unit).filter(Boolean))];
+  return units.length === 1 ? units[0] : "";
+}
+
+/*
+  Keep separate observations for each country and commodity/element.
+  When duplicate observations remain after the selected filters,
+  the latest record is not guessed; the dashboard uses the first
+  returned observation and labels it as a record-level value.
+*/
+function recordsByCountry(){
+  const result = new Map();
+
+  filteredRecords.forEach(r=>{
+    if(!r.areaCode) return;
+
+    if(!result.has(r.areaCode)){
+      result.set(r.areaCode,{
+        area:r.area,
+        areaCode:r.areaCode,
+        value:r.value,
+        unit:r.unit,
+        item:r.item,
+        element:r.element,
+        year:r.year,
+        flag:r.flag,
+        count:1
+      });
+    }else{
+      const existing = result.get(r.areaCode);
+      if(existing.item === r.item && existing.element === r.element){
+        existing.count++;
+      }
+    }
+  });
+
+  return result;
+}
+
+/* =========================================================
+   MAP CLASSIFICATION
+========================================================= */
+function quantile(sortedValues,q){
+  if(!sortedValues.length) return 0;
+  const pos = (sortedValues.length-1)*q;
+  const base = Math.floor(pos);
+  const rest = pos-base;
+  return sortedValues[base+1] !== undefined
+    ? sortedValues[base] + rest*(sortedValues[base+1]-sortedValues[base])
+    : sortedValues[base];
+}
+
+function calculateClasses(values){
+  const sorted = values.slice().sort((a,b)=>a-b);
+  if(!sorted.length) return [];
+
+  const method = $("classification").value;
+  const breaks = [];
+
+  if(method === "equal"){
+    const min = sorted[0], max = sorted[sorted.length-1];
+    for(let i=1;i<5;i++) breaks.push(min+(max-min)*i/5);
+  }else if(method === "natural"){
+    /*
+      Simple deterministic five-class approximation.
+      This is not a full Jenks optimisation.
+    */
+    for(let i=1;i<5;i++) breaks.push(quantile(sorted,i/5));
+  }else{
+    for(let i=1;i<5;i++) breaks.push(quantile(sorted,i/5));
+  }
+  return breaks;
+}
+
+function classIndex(value,breaks){
+  for(let i=0;i<breaks.length;i++){
+    if(value <= breaks[i]) return i;
+  }
+  return 4;
+}
+
+function formatBreak(value){
+  return numberFormat(value,2);
+}
+
+function updateLegend(breaks,unit){
+  const labels = $("legendLabels");
+  if(!breaks.length){
+    labels.innerHTML="<span>No observations</span><span>No data</span>";
+    $("legendTitle").textContent="No classifiable data";
+    return;
+  }
+
+  $("legendTitle").textContent =
+    `Selected indicator values${unit ? " ("+unit+")" : ""}`;
+
+  labels.innerHTML =
+    `<span>≤ ${formatBreak(breaks[0])}</span>`+
+    `<span>${formatBreak(breaks[0])} – ${formatBreak(breaks[1] ?? breaks[0])}</span>`+
+    `<span>≥ ${formatBreak(breaks[3] ?? breaks[breaks.length-1])}</span>`;
+}
+
+/* =========================================================
+   DRAW MAP
+========================================================= */
+function drawMap(){
+  if(!worldFeatures.length) return;
+
+  if(mapLayer){
+    map.removeLayer(mapLayer);
+    mapLayer = null;
+  }
+
+  const countryData = recordsByCountry();
+  const values = [...countryData.values()].map(d=>d.value);
+  const breaks = calculateClasses(values);
+  lastClasses = breaks;
+  updateLegend(breaks,selectedUnit);
+
+  mapLayer = L.geoJSON(worldFeatures,{
+    style:feature=>{
+      const code = featureM49(feature);
+      const record = code ? countryData.get(code) : null;
+
+      if(!record){
+        return {
+          color:"#aab8c4",
+          weight:.55,
+          fillColor:"#edf2f5",
+          fillOpacity:.85
+        };
+      }
+
+      const index = classIndex(record.value,breaks);
+      return {
+        color:"#ffffff",
+        weight:.65,
+        fillColor:PALETTE[index],
+        fillOpacity:.92
+      };
+    },
+    onEachFeature:(feature,layer)=>{
+      const name = countryName(feature);
+      const code = featureM49(feature);
+      const record = code ? countryData.get(code) : null;
+
+      if(record){
+        layer.bindTooltip(
+          `<strong>${safeText(name)}</strong><br>`+
+          `${safeText(record.element)}: ${numberFormat(record.value)} ${safeText(record.unit)}`,
+          {sticky:true}
+        );
+
+        layer.on("click",()=>{
+          updateCountryDetails(record);
+          selectedCountry = record.area;
+          highlightCountry(layer);
+        });
+      }else{
+        layer.bindTooltip(
+          `<strong>${safeText(name)}</strong><br>No matching observation`,
+          {sticky:true}
+        );
+      }
+    }
+  }).addTo(map);
+
+  $("mapSubtitle").textContent =
+    `${countryData.size} mapped countries • ${$("year").value}`;
+
+  if(countryData.size === 0){
+    setMessage(
+      "No hemp-related observations matched the current filters. " +
+      "Check the commodity keyword, year, and uploaded data."
+    );
+  }
+}
+
+function highlightCountry(layer){
+  if(mapLayer){
+    mapLayer.eachLayer(l=>{
+      mapLayer.resetStyle(l);
+    });
+  }
+  layer.setStyle({color:"#e34a43",weight:2.5,fillOpacity:1});
+  if(layer.bringToFront) layer.bringToFront();
+}
+
+/* =========================================================
+   ANALYTICS
+========================================================= */
+function updateAnalytics(){
+  const countries = recordsByCountry();
+  const values = filteredRecords.map(r=>r.value).filter(Number.isFinite);
+  const units = [...new Set(filteredRecords.map(r=>r.unit).filter(Boolean))];
+
+  $("kpiCountries").textContent = numberFormat(countries.size,0);
+  $("kpiRecords").textContent = numberFormat(filteredRecords.length,0);
+  $("kpiUnit").textContent = units.length === 1 ? units[0] : (units.length ? `${units.length} units` : "—");
+
+  if(units.length === 1 && values.length){
+    const total = values.reduce((sum,value)=>sum+value,0);
+    $("kpiTotal").textContent = numberFormat(total,2);
+  }else{
+    $("kpiTotal").textContent = "N/A";
+  }
+}
+
+function rankingRows(){
+  const countryData = recordsByCountry();
+  return [...countryData.values()].sort((a,b)=>b.value-a.value);
+}
+
+function updateRanking(){
+  const rows = rankingRows();
+  const top = rows.slice(0,10);
+
+  $("rankingBody").innerHTML = "";
+
+  if(!rows.length){
+    $("rankingBody").innerHTML='<tr><td colspan="3">No matching observations</td></tr>';
+    drawChart([]);
+    return;
+  }
+
+  rows.slice(0,100).forEach(record=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML =
+      `<td><a href="#" style="color:#176b9c;text-decoration:none;font-weight:700">${safeText(record.area)}</a></td>`+
+      `<td class="num">${numberFormat(record.value,2)}</td>`+
+      `<td>${safeText(record.unit)}</td>`;
+
+    tr.querySelector("a").addEventListener("click",event=>{
+      event.preventDefault();
+      updateCountryDetails(record);
+      selectedCountry = record.area;
+      const layer = findLayerByCode(record.areaCode);
+      if(layer){
+        map.fitBounds(layer.getBounds(),{maxZoom:5});
+        highlightCountry(layer);
+      }
+    });
+    $("rankingBody").appendChild(tr);
+  });
+
+  drawChart(top);
+}
+
+function findLayerByCode(code){
+  if(!mapLayer) return null;
+  let found = null;
+  mapLayer.eachLayer(layer=>{
+    if(featureM49(layer.feature) === code) found = layer;
+  });
+  return found;
+}
+
+function drawChart(rows){
+  if(chart){
+    chart.destroy();
+    chart = null;
+  }
+
+  const canvas = $("rankingChart");
+  chart = new Chart(canvas,{
+    type:"bar",
+    data:{
+      labels:rows.map(r=>r.area),
+      datasets:[{
+        label:"Value",
+        data:rows.map(r=>r.value),
+        backgroundColor:"#24815d",
+        borderColor:"#075b3d",
+        borderWidth:1,
+        borderRadius:3
+      }]
+    },
+    options:{
+      responsive:true,
+      maintainAspectRatio:false,
+      indexAxis:"y",
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          callbacks:{
+            label:context=>`${numberFormat(context.raw)} ${rows[context.dataIndex]?.unit || ""}`
+          }
+        }
+      },
+      scales:{
+        x:{
+          beginAtZero:true,
+          ticks:{font:{size:9}},
+          grid:{color:"#edf1f4"}
+        },
+        y:{
+          ticks:{font:{size:9}},
+          grid:{display:false}
+        }
+      }
+    }
+  });
+}
+
+function updateCountryDetails(record){
+  const box = $("countryDetails");
+
+  if(!record){
+    box.textContent = "Select a country on the map or click a country in the ranking table.";
+    return;
+  }
+
+  box.innerHTML =
+    `<strong>${safeText(record.area)}</strong><br>`+
+    `Value: <strong>${numberFormat(record.value,3)} ${safeText(record.unit)}</strong><br>`+
+    `Commodity: ${safeText(record.item)}<br>`+
+    `Indicator: ${safeText(record.element)}<br>`+
+    `Year: ${safeText(record.year)}<br>`+
+    `M49 code: ${safeText(record.areaCode || "Not supplied")}<br>`+
+    `FAOSTAT flag: ${safeText(record.flag || "Not supplied")}<br>`+
+    `<span class="muted">Source: ${safeText(dataSourceLabel)}</span>`;
+}
+
+/* =========================================================
+   EXPORTS
+========================================================= */
+function downloadFile(content,filename,mime){
+  const blob = new Blob([content],{type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function exportCSV(){
+  if(!filteredRecords.length){
+    setMessage("There are no filtered records to export.");
+    return;
+  }
+
+  const csv = Papa.unparse(filteredRecords.map(r=>({
+    Area:r.area,
+    "Area Code (M49)":r.areaCode,
+    Item:r.item,
+    "Item Code":r.itemCode,
+    Element:r.element,
+    "Element Code":r.elementCode,
+    Year:r.year,
+    Value:r.value,
+    Unit:r.unit,
+    Flag:r.flag,
+    "Flag Description":r.flagDescription
+  })));
+
+  downloadFile(csv,"FAOSTAT_Industrial_Hemp_2024_Filtered.csv","text/csv;charset=utf-8");
+}
+
+function exportGeoJSON(){
+  const countryData = recordsByCountry();
+  if(!worldFeatures.length || !countryData.size){
+    setMessage("There are no mapped observations to export.");
+    return;
+  }
+
+  const features = worldFeatures.map(feature=>{
+    const code = featureM49(feature);
+    const record = code ? countryData.get(code) : null;
+
+    return {
+      type:"Feature",
+      geometry:feature.geometry,
+      properties:{
+        country:countryName(feature),
+        m49:code,
+        has_observation:!!record,
+        value:record ? record.value : null,
+        unit:record ? record.unit : null,
+        commodity:record ? record.item : null,
+        indicator:record ? record.element : null,
+        year:record ? record.year : null,
+        source:"FAOSTAT"
+      }
+    };
+  });
+
+  downloadFile(
+    JSON.stringify({type:"FeatureCollection",features},null,2),
+    "FAOSTAT_Industrial_Hemp_World_2024.geojson",
+    "application/geo+json"
+  );
+}
+
+/* =========================================================
+   EVENT LISTENERS
+========================================================= */
+$("loadBtn").addEventListener("click",loadFaostat);
+
+$("applyBtn").addEventListener("click",()=>{
+  populateFilters();
+  applyFilters();
+});
+
+$("keyword").addEventListener("change",()=>{
+  populateFilters();
+  applyFilters();
+});
+
+$("element").addEventListener("change",applyFilters);
+$("item").addEventListener("change",applyFilters);
+$("classification").addEventListener("change",()=>{
+  drawMap();
+});
+
+$("countrySearch").addEventListener("keydown",event=>{
+  if(event.key==="Enter") applyFilters();
+});
+
+$("clearSearchBtn").addEventListener("click",()=>{
+  $("countrySearch").value="";
+  applyFilters();
+});
+
+$("exportCsv").addEventListener("click",exportCSV);
+$("exportGeo").addEventListener("click",exportGeoJSON);
+
+$("resetBtn").addEventListener("click",()=>{
+  $("keyword").value="hemp";
+  $("year").value=YEAR_DEFAULT;
+  $("element").value="ALL";
+  $("item").value="ALL";
+  $("classification").value="quantile";
+  $("countrySearch").value="";
+  $("csvFile").value="";
+  selectedCountry=null;
+  populateFilters();
+  applyFilters();
+  updateCountryDetails(null);
+  map.setView([18,0],2);
+  setMessage("Filters reset. Click Load FAOSTAT 2024 to retrieve fresh data.");
+});
+
+/* =========================================================
+   STARTUP
+========================================================= */
+async function initialise(){
+  setStatus("Loading world boundaries");
+  await loadWorld();
+  setStatus("Ready to connect to FAOSTAT");
+  setMessage(
+    "World map initialised.\n" +
+    "Click “Load FAOSTAT 2024” to retrieve the selected year's records."
+  );
+  map.invalidateSize();
+}
+
+initialise();
+</script>
+</body>
+</html>
